@@ -1,0 +1,59 @@
+{
+  "name": "from-scratch-blog",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A lightweight, reusable personal blogging engine for Netlify.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "start": "netlify dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "astro check && tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "npx netlify database migrations apply",
+    "db:seed": "tsx scripts/seed.ts",
+    "ci": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e"
+  },
+  "dependencies": {
+    "@astrojs/netlify": "^8.2.2",
+    "@netlify/database": "^2.0.0",
+    "@netlify/functions": "^6.0.0",
+    "@netlify/identity": "^2.0.0",
+    "astro": "^7.2.3",
+    "drizzle-orm": "^1.0.0-rc.4",
+    "github-slugger": "^2.0.0",
+    "marked": "^18.0.10",
+    "pg": "^8.23.0",
+    "sanitize-html": "^2.17.7",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@netlify/database-dev": "^1.0.0",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^22.19.13",
+    "@types/pg": "^8.23.1",
+    "@types/sanitize-html": "^2.16.1",
+    "drizzle-kit": "^1.0.0-rc.4",
+    "eslint": "^10.8.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-astro": "^3.1.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "tsx": "^4.23.12",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.67.0",
+    "vitest": "^4.1.10"
+  }
+}

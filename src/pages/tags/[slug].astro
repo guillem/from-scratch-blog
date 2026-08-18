@@ -16,17 +16,13 @@ if (!result) {
 
 <BaseLayout title={result.tag.name} canonicalPath={`/tags/${result.tag.slug}`}>
   <h1>Tag: {result.tag.name}</h1>
-  {
-    result.posts.length === 0 ? (
-      <p class="empty">No published posts with this tag.</p>
-    ) : (
-      <ol class="post-list">
-        {result.posts.map((post) => (
-          <li>
-            <PostCard post={post} />
-          </li>
-        ))}
-      </ol>
-    )
-  }
+  <ol class="post-list">
+    {
+      result.posts.map((post) => (
+        <li>
+          <PostCard post={post} />
+        </li>
+      ))
+    }
+  </ol>
 </BaseLayout>

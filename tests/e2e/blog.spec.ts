@@ -63,6 +63,20 @@ test("security headers restrict scripts and keep admin APIs private", async ({
   expect(preview.headers()["cache-control"]).toMatch(/private/);
 });
 
+test("draft-only tags are not listed publicly", async ({ page }) => {
+  await page.goto("/admin/posts/new");
+  await page.getByLabel("Title").fill("Draft tagged post");
+  await page.getByLabel("Slug").fill("draft-tagged-e2e");
+  await page.getByLabel("Body (Markdown)").fill("Still a draft.");
+  await page.getByLabel("Tags").fill("draft-only-tag");
+  await page.getByLabel("Status").selectOption("draft");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByRole("heading", { name: "Edit post" })).toBeVisible();
+
+  const response = await page.goto("/tags/draft-only-tag");
+  expect(response?.status()).toBe(404);
+});
+
 test("authenticated admin can create a post", async ({ page }) => {
   await page.goto("/admin/posts/new");
   await page.getByLabel("Title").fill("E2E created post");

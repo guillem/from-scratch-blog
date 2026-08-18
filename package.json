@@ -21,7 +21,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "npx netlify database migrations apply",
+    "db:migrate": "tsx scripts/warn-remote-db.ts && npx netlify database migrations apply",
     "db:seed": "tsx scripts/seed.ts",
     "ci": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e"
   },

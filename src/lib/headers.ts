@@ -1,3 +1,5 @@
+import { isHostedNetlifyDeploy } from "./env";
+
 export const SECURITY_HEADERS: Record<string, string> = {
   "Content-Security-Policy": [
     "default-src 'self'",
@@ -36,6 +38,9 @@ export function withSecurityHeaders(
 ): void {
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
     headers.set(name, value);
+  }
+  if (isHostedNetlifyDeploy()) {
+    headers.set("Strict-Transport-Security", "max-age=31536000");
   }
   if (options?.cache === "private") {
     headers.set("Cache-Control", "private, no-store");

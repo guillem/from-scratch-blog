@@ -8,7 +8,7 @@ export const GET: APIRoute = async () => {
   const posts = await listPublishedPosts();
   const items = posts
     .map((post) => {
-      const url = absoluteUrl(`/posts/${post.slug}`);
+      const url = escapeXml(absoluteUrl(`/posts/${post.slug}`));
       const description = escapeXml(
         post.summary || excerptFromMarkdown(post.bodyMarkdown),
       );
@@ -27,7 +27,7 @@ export const GET: APIRoute = async () => {
 <rss version="2.0">
   <channel>
     <title>${escapeXml(siteConfig.title)}</title>
-    <link>${absoluteUrl("/")}</link>
+    <link>${escapeXml(absoluteUrl("/"))}</link>
     <description>${escapeXml(siteConfig.description)}</description>
     ${items}
   </channel>

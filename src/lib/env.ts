@@ -24,6 +24,29 @@ export function isDevAuthBypassEnabled(): boolean {
   return true;
 }
 
-export function isProductionSeedForbidden(): boolean {
-  return isHostedNetlifyDeploy() || process.env.ALLOW_PROD_SEED === "false";
+export function shouldRefuseHostedSeed(): boolean {
+  return isHostedNetlifyDeploy() && process.env.ALLOW_PROD_SEED !== "true";
+}
+
+export function isRemoteDatabaseUrl(url = process.env.NETLIFY_DB_URL): boolean {
+  if (!url) {
+    return false;
+  }
+  try {
+    const host = new URL(url).hostname.toLowerCase();
+    return (
+      host !== "localhost" && host !== "127.0.0.1" && host !== "[::1]" && host !== "::1"
+    );
+  } catch {
+    return !/(?:^|[/@])(?:localhost|127\.0\.0\.1|\[::1\])(?::|\/|$)/i.test(url);
+  }
+}
+
+export function warnIfRemoteDatabaseUrl(url = process.env.NETLIFY_DB_URL): void {
+  if (!isRemoteDatabaseUrl(url)) {
+    return;
+  }
+  console.warn(
+    "NETLIFY_DB_URL does not look like a local database. This command can change remote data.",
+  );
 }

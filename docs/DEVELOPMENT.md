@@ -30,8 +30,11 @@ npm run db:migrate
 npm run db:seed
 ```
 
-`db:migrate` is `netlify database migrations apply` and targets only the
-local database. Hosted databases migrate during deploy.
+`db:migrate` is `netlify database migrations apply` and targets the
+database in `NETLIFY_DB_URL`. Hosted databases migrate during deploy.
+Seeding a hosted Netlify context (`CONTEXT=production`, `deploy-preview`,
+or `branch-deploy`) exits unless `ALLOW_PROD_SEED=true`. Both `db:seed`
+and `db:migrate` warn when `NETLIFY_DB_URL` is not localhost.
 
 Useful CLI:
 

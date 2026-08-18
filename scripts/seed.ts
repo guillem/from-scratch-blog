@@ -1,11 +1,15 @@
-import { isHostedNetlifyDeploy } from "../src/lib/env";
+import { shouldRefuseHostedSeed, warnIfRemoteDatabaseUrl } from "../src/lib/env";
 import { resetDb } from "../db";
 import { seedDemoContent } from "../src/lib/seed";
 
-if (isHostedNetlifyDeploy() && process.env.ALLOW_PROD_SEED !== "true") {
-  console.error("Refusing to seed a hosted Netlify database.");
+if (shouldRefuseHostedSeed()) {
+  console.error(
+    "Refusing to seed a hosted Netlify database. Set ALLOW_PROD_SEED=true to override.",
+  );
   process.exit(1);
 }
+
+warnIfRemoteDatabaseUrl();
 
 if (!process.env.NETLIFY_DB_URL && process.env.NETLIFY !== "true") {
   console.error(

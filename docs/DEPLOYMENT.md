@@ -40,7 +40,9 @@ opt the project in explicitly.
 Set `SITE_URL` in the Netlify UI (scope: Builds + Functions) to the canonical
 origin, for example `https://example.netlify.app` or your custom domain.
 This is not a secret. If unset, the app falls back to Netlify’s `URL` /
-`DEPLOY_PRIME_URL`.
+`DEPLOY_PRIME_URL`. Hosted responses send
+`Strict-Transport-Security: max-age=31536000` from middleware (SSR) and
+`netlify.toml` (static assets).
 
 Do **not** set `DEV_AUTH_BYPASS` in Netlify.
 

@@ -106,7 +106,11 @@ export async function listPublishedPostsByTagSlug(
     .innerJoin(posts, eq(postTags.postId, posts.id))
     .where(and(eq(postTags.tagId, tag.id), eq(posts.status, "published")))
     .orderBy(desc(posts.publishedAt), desc(posts.createdAt));
-  return { tag, posts: await attachTags(rows.map((row) => row.post)) };
+  const published = await attachTags(rows.map((row) => row.post));
+  if (published.length === 0) {
+    return undefined;
+  }
+  return { tag, posts: published };
 }
 
 async function resolveTags(names: string[]): Promise<Tag[]> {

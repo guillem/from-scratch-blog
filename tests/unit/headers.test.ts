@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { denyJsAssetInlining } from "../../src/lib/client-assets";
-import { cachePolicyForPath, SECURITY_HEADERS } from "../../src/lib/headers";
+import {
+  cachePolicyForPath,
+  SECURITY_HEADERS,
+  withSecurityHeaders,
+} from "../../src/lib/headers";
 
 describe("SECURITY_HEADERS", () => {
   it("does not allow inline scripts", () => {
@@ -32,5 +36,28 @@ describe("cachePolicyForPath", () => {
     expect(cachePolicyForPath("/")).toBe("public");
     expect(cachePolicyForPath("/posts/hello")).toBe("public");
     expect(cachePolicyForPath("/api/public")).toBe("public");
+  });
+});
+
+describe("withSecurityHeaders", () => {
+  it("adds HSTS only on hosted Netlify deploys", () => {
+    const previous = process.env.CONTEXT;
+    try {
+      delete process.env.CONTEXT;
+      const local = new Headers();
+      withSecurityHeaders(local);
+      expect(local.get("Strict-Transport-Security")).toBeNull();
+
+      process.env.CONTEXT = "production";
+      const hosted = new Headers();
+      withSecurityHeaders(hosted);
+      expect(hosted.get("Strict-Transport-Security")).toBe("max-age=31536000");
+    } finally {
+      if (previous === undefined) {
+        delete process.env.CONTEXT;
+      } else {
+        process.env.CONTEXT = previous;
+      }
+    }
   });
 });

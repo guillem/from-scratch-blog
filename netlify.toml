@@ -12,6 +12,7 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Strict-Transport-Security = "max-age=31536000"
 
 # Role-based redirects are a coarse CDN perimeter only.
 # Every admin write is also authorized server-side.

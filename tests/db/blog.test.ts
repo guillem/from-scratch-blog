@@ -101,6 +101,16 @@ describe("posts and tags", () => {
     });
   });
 
+  it("hides tags that only appear on drafts", async () => {
+    await createPostAsAdmin(admin, {
+      ...draft,
+      slug: "draft-tagged",
+      tagNames: ["secret-topic"],
+    });
+    expect(await listPublishedPostsByTagSlug("secret-topic")).toBeUndefined();
+    expect((await listTags()).map((tag) => tag.slug)).toContain("secret-topic");
+  });
+
   it("creates tags with unique slugs", async () => {
     await createTag({ name: "Meta", slug: "meta" });
     await expect(createTag({ name: "Meta", slug: "meta" })).rejects.toThrow(

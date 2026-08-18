@@ -59,11 +59,7 @@ if (Astro.request.method === "POST") {
       }
     </div>
   </form>
-  <form
-    class="form"
-    method="post"
-    onsubmit="return confirm('Delete this post permanently?')"
-  >
+  <form class="form" method="post" data-confirm="Delete this post permanently?">
     <input type="hidden" name="intent" value="delete" />
     <div class="form-actions">
       <button class="danger" type="submit">Delete post</button>

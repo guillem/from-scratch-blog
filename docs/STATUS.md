@@ -21,8 +21,9 @@
 - `DEV_AUTH_BYPASS` is a development hatch. It must never be set in the
   Netlify UI.
 - There are no comments, media uploads, or multiple authors.
-- Admin Markdown preview allows `'unsafe-inline'` in CSP because Astro emits
-  small inline scripts. Tighten later if you add a nonce-based CSP.
+- `script-src` is `'self'` only. Delete confirmations use bundled listeners
+  rather than `onsubmit` attributes. `style-src` still allows `'unsafe-inline'`
+  for a few presentational inline styles.
 - Database and Identity require a Netlify credit-based plan.
 
 ## Technical debt
@@ -42,4 +43,4 @@
    path on a Deploy Preview.
 2. Add optional custom domain and `SITE_URL`.
 3. If comments are wanted, design them as a separate moderated subsystem.
-4. Consider tightening CSP once admin client scripts are hashed or nonced.
+4. Consider a nonce-based CSP if more admin client JavaScript is added.

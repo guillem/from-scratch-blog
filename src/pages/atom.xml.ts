@@ -9,7 +9,7 @@ export const GET: APIRoute = async () => {
   const updated = (posts[0]?.publishedAt ?? new Date()).toISOString();
   const entries = posts
     .map((post) => {
-      const url = absoluteUrl(`/posts/${post.slug}`);
+      const url = escapeXml(absoluteUrl(`/posts/${post.slug}`));
       const summary = escapeXml(post.summary || excerptFromMarkdown(post.bodyMarkdown));
       return `<entry>
   <title>${escapeXml(post.title)}</title>
@@ -26,9 +26,9 @@ export const GET: APIRoute = async () => {
 <feed xmlns="http://www.w3.org/2005/Atom">
   <title>${escapeXml(siteConfig.title)}</title>
   <subtitle>${escapeXml(siteConfig.description)}</subtitle>
-  <link href="${absoluteUrl("/atom.xml")}" rel="self" />
-  <link href="${absoluteUrl("/")}" />
-  <id>${absoluteUrl("/")}</id>
+  <link href="${escapeXml(absoluteUrl("/atom.xml"))}" rel="self" />
+  <link href="${escapeXml(absoluteUrl("/"))}" />
+  <id>${escapeXml(absoluteUrl("/"))}</id>
   <updated>${updated}</updated>
   ${entries}
 </feed>`;

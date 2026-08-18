@@ -62,4 +62,6 @@ No user table is stored here. Administrators are Netlify Identity users.
 - Browser code never receives `NETLIFY_DB_URL` or Identity admin tokens.
 - `src/config/site.ts` and `.env.example` are the only committed configuration
   surfaces. Real env files stay local.
-- Seed data is opt-in via `npm run db:seed` and refuses hosted production.
+- Seed data is opt-in via `npm run db:seed` and refuses hosted Netlify
+  deploys unless `ALLOW_PROD_SEED=true`. `db:seed` and `db:migrate` warn
+  when `NETLIFY_DB_URL` is not a loopback host.

@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import netlify from "@astrojs/netlify";
+import { denyJsAssetInlining } from "./src/lib/client-assets";
 
 const siteUrl =
   process.env.SITE_URL ||
@@ -13,5 +14,10 @@ export default defineConfig({
   adapter: netlify(),
   security: {
     checkOrigin: true,
+  },
+  vite: {
+    build: {
+      assetsInlineLimit: denyJsAssetInlining,
+    },
   },
 });

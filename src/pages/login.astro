@@ -2,9 +2,10 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { getCurrentUser, isAdmin } from "../lib/auth";
 import { isDevAuthBypassEnabled } from "../lib/env";
+import { safeNextPath } from "../lib/redirects";
 
 const user = await getCurrentUser();
-const next = Astro.url.searchParams.get("next") || "/admin";
+const next = safeNextPath(Astro.url.searchParams.get("next"));
 const error = Astro.url.searchParams.get("error");
 const bypass = isDevAuthBypassEnabled();
 ---

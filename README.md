@@ -54,17 +54,17 @@ but `netlify dev` is the supported way to get a local database.
 
 ## Common commands
 
-| Command               | Purpose                                                    |
-| --------------------- | ---------------------------------------------------------- |
-| `npm run dev`         | Astro dev server                                           |
-| `npx netlify dev`     | Local Netlify runtime + local database                     |
-| `npm run db:generate` | Create a migration from `db/schema.ts`                     |
-| `npm run db:migrate`  | Apply pending migrations to the **local** database         |
-| `npm run db:seed`     | Insert optional local fixtures (refuses hosted production) |
-| `npm test`            | Unit and database tests                                    |
-| `npm run test:e2e`    | Playwright flows against an ephemeral database             |
-| `npm run build`       | Production build                                           |
-| `npm run ci`          | Format, lint, types, tests, build, and e2e                 |
+| Command               | Purpose                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| `npm run dev`         | Astro dev server                                                                      |
+| `npx netlify dev`     | Local Netlify runtime + local database                                                |
+| `npm run db:generate` | Create a migration from `db/schema.ts`                                                |
+| `npm run db:migrate`  | Apply pending migrations to `NETLIFY_DB_URL` (warns if the host is not local)         |
+| `npm run db:seed`     | Insert optional local fixtures (refuses hosted deploys unless `ALLOW_PROD_SEED=true`) |
+| `npm test`            | Unit and database tests                                                               |
+| `npm run test:e2e`    | Playwright flows against an ephemeral database                                        |
+| `npm run build`       | Production build                                                                      |
+| `npm run ci`          | Format, lint, types, tests, build, and e2e                                            |
 
 ## Customize a fork
 

@@ -1,0 +1,98 @@
+---
+import type { PostWithTags } from "../lib/posts";
+
+interface Props {
+  post?: PostWithTags;
+}
+
+const { post } = Astro.props;
+const tagValue = post?.tags.map((tag) => tag.name).join(", ") ?? "";
+---
+
+<div class="split">
+  <div class="form">
+    <label>
+      Title
+      <input
+        id="title"
+        name="title"
+        required
+        maxlength="200"
+        value={post?.title ?? ""}
+      />
+    </label>
+    <label>
+      Slug
+      <input
+        id="slug"
+        name="slug"
+        maxlength="120"
+        value={post?.slug ?? ""}
+        placeholder="generated-from-title"
+      />
+    </label>
+    <label>
+      Summary
+      <textarea id="summary" name="summary" maxlength="500" style="min-height: 5rem;"
+        >{post?.summary ?? ""}</textarea
+      >
+    </label>
+    <label>
+      Body (Markdown)
+      <textarea id="bodyMarkdown" name="bodyMarkdown" required
+        >{post?.bodyMarkdown ?? ""}</textarea
+      >
+    </label>
+    <label>
+      Tags
+      <input
+        id="tags"
+        name="tags"
+        value={tagValue}
+        placeholder="comma, separated, tags"
+      />
+    </label>
+    <label>
+      Status
+      <select id="status" name="status">
+        <option value="draft" selected={post?.status !== "published"}>Draft</option>
+        <option value="published" selected={post?.status === "published"}
+          >Published</option
+        >
+      </select>
+    </label>
+  </div>
+  <section aria-label="Markdown preview">
+    <h2>Preview</h2>
+    <div id="preview" class="preview-pane prose"></div>
+  </section>
+</div>
+
+<script>
+  const body = document.querySelector<HTMLTextAreaElement>("#bodyMarkdown");
+  const preview = document.querySelector("#preview");
+  let timer = 0;
+
+  async function refreshPreview() {
+    if (!body || !preview) return;
+    const response = await fetch("/api/admin/preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ markdown: body.value }),
+    });
+    if (!response.ok) {
+      preview.textContent = "Preview unavailable.";
+      return;
+    }
+    const data = (await response.json()) as { html: string };
+    preview.innerHTML = data.html;
+  }
+
+  body?.addEventListener("input", () => {
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      void refreshPreview();
+    }, 250);
+  });
+  void refreshPreview();
+</script>

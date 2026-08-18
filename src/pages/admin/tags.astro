@@ -1,0 +1,91 @@
+---
+import { ZodError } from "zod";
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import Flash from "../../components/Flash.astro";
+import { createTagAsAdmin, deleteTagAsAdmin } from "../../lib/admin";
+import { getCurrentUser } from "../../lib/auth";
+import { assertSafeMutation } from "../../lib/csrf";
+import { publicErrorMessage } from "../../lib/errors";
+import { listTags } from "../../lib/tags";
+import { flattenZodError, parseTagForm } from "../../lib/validation";
+
+let error: string | null = null;
+
+if (Astro.request.method === "POST") {
+  try {
+    assertSafeMutation(Astro.request);
+    const user = await getCurrentUser();
+    const form = await Astro.request.formData();
+    const intent = form.get("intent");
+    if (intent === "delete") {
+      const id = String(form.get("id") ?? "");
+      await deleteTagAsAdmin(user, id);
+    } else {
+      await createTagAsAdmin(user, parseTagForm(form));
+    }
+    return Astro.redirect("/admin/tags?saved=1");
+  } catch (caught) {
+    error =
+      caught instanceof ZodError ? flattenZodError(caught) : publicErrorMessage(caught);
+  }
+}
+
+const tags = await listTags();
+---
+
+<AdminLayout title="Tags">
+  <h1>Tags</h1>
+  <Flash error={error} />
+  <form class="form" method="post">
+    <label>
+      Name
+      <input name="name" required maxlength="40" />
+    </label>
+    <label>
+      Slug
+      <input name="slug" maxlength="60" placeholder="generated-from-name" />
+    </label>
+    <div class="form-actions">
+      <button type="submit">Add tag</button>
+    </div>
+  </form>
+  {
+    tags.length === 0 ? (
+      <p class="empty">No tags yet.</p>
+    ) : (
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Slug</th>
+              <th>Posts</th>
+              <th />
+            </tr>
+          </thead>
+          <tbody>
+            {tags.map((tag) => (
+              <tr>
+                <td>{tag.name}</td>
+                <td>{tag.slug}</td>
+                <td>{tag.postCount}</td>
+                <td>
+                  <form
+                    method="post"
+                    onsubmit="return confirm('Delete this tag? Posts keep their other tags.')"
+                  >
+                    <input type="hidden" name="intent" value="delete" />
+                    <input type="hidden" name="id" value={tag.id} />
+                    <button class="danger" type="submit">
+                      Delete
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</AdminLayout>

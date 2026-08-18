@@ -1,0 +1,40 @@
+---
+import { ZodError } from "zod";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import Flash from "../../../components/Flash.astro";
+import PostForm from "../../../components/PostForm.astro";
+import { createPostAsAdmin } from "../../../lib/admin";
+import { getCurrentUser } from "../../../lib/auth";
+import { assertSafeMutation } from "../../../lib/csrf";
+import { publicErrorMessage } from "../../../lib/errors";
+import { flattenZodError, parsePostForm } from "../../../lib/validation";
+
+let error: string | null = null;
+
+if (Astro.request.method === "POST") {
+  try {
+    assertSafeMutation(Astro.request);
+    const user = await getCurrentUser();
+    const created = await createPostAsAdmin(
+      user,
+      parsePostForm(await Astro.request.formData()),
+    );
+    return Astro.redirect("/admin/posts/" + created.id + "?saved=1");
+  } catch (caught) {
+    error =
+      caught instanceof ZodError ? flattenZodError(caught) : publicErrorMessage(caught);
+  }
+}
+---
+
+<AdminLayout title="New post">
+  <h1>New post</h1>
+  <Flash error={error} />
+  <form class="form" method="post">
+    <PostForm />
+    <div class="form-actions">
+      <button type="submit">Save</button>
+      <a class="button secondary" href="/admin">Cancel</a>
+    </div>
+  </form>
+</AdminLayout>

@@ -1,0 +1,26 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PostCard from "../components/PostCard.astro";
+import { siteConfig } from "../config/site";
+import { listPublishedPosts } from "../lib/posts";
+
+const posts = await listPublishedPosts();
+---
+
+<BaseLayout>
+  <h1>{siteConfig.title}</h1>
+  <p class="lede">{siteConfig.description}</p>
+  {
+    posts.length === 0 ? (
+      <p class="empty">No published posts yet.</p>
+    ) : (
+      <ol class="post-list">
+        {posts.map((post) => (
+          <li>
+            <PostCard post={post} />
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</BaseLayout>

@@ -1,0 +1,72 @@
+---
+import { ZodError } from "zod";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import Flash from "../../../components/Flash.astro";
+import PostForm from "../../../components/PostForm.astro";
+import { deletePostAsAdmin, updatePostAsAdmin } from "../../../lib/admin";
+import { getCurrentUser } from "../../../lib/auth";
+import { assertSafeMutation } from "../../../lib/csrf";
+import { publicErrorMessage } from "../../../lib/errors";
+import { getPostById } from "../../../lib/posts";
+import { flattenZodError, parsePostForm } from "../../../lib/validation";
+
+const { id } = Astro.params;
+if (!id) {
+  return new Response(null, { status: 404 });
+}
+
+let error: string | null = null;
+let post = await getPostById(id);
+if (!post) {
+  return new Response(null, { status: 404 });
+}
+
+if (Astro.request.method === "POST") {
+  try {
+    assertSafeMutation(Astro.request);
+    const user = await getCurrentUser();
+    const form = await Astro.request.formData();
+    if (form.get("intent") === "delete") {
+      await deletePostAsAdmin(user, id);
+      return Astro.redirect("/admin?saved=1");
+    }
+    post = await updatePostAsAdmin(user, id, parsePostForm(form));
+    return Astro.redirect(`/admin/posts/${post.id}?saved=1`);
+  } catch (caught) {
+    error =
+      caught instanceof ZodError ? flattenZodError(caught) : publicErrorMessage(caught);
+  }
+}
+---
+
+<AdminLayout title={`Edit ${post.title}`}>
+  <h1>Edit post</h1>
+  <Flash error={error} />
+  <form class="form" method="post">
+    <PostForm post={post} />
+    <div class="form-actions">
+      <button type="submit">Save</button>
+      {
+        post.status === "draft" ? (
+          <a class="button secondary" href={`/admin/preview/${post.slug}`}>
+            Preview draft
+          </a>
+        ) : (
+          <a class="button secondary" href={`/posts/${post.slug}`}>
+            View public page
+          </a>
+        )
+      }
+    </div>
+  </form>
+  <form
+    class="form"
+    method="post"
+    onsubmit="return confirm('Delete this post permanently?')"
+  >
+    <input type="hidden" name="intent" value="delete" />
+    <div class="form-actions">
+      <button class="danger" type="submit">Delete post</button>
+    </div>
+  </form>
+</AdminLayout>

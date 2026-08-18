@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build and generated output
+dist/
+.astro/
+.output/
+
+# Environment and secrets — never commit real values
+.env
+.env.*
+!.env.example
+
+# Netlify local state (includes local database files and site IDs)
+.netlify/
+
+# Test artifacts
+coverage/
+playwright-report/
+test-results/
+.test-db/
+.test-db-url
+blob-report/
+
+# Editors and OS
+.DS_Store
+*.swp
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Agent skill copies installed into this working tree (not part of the app)
+.agents/
+skills-lock.json

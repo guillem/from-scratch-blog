@@ -5,6 +5,7 @@ document, and leave it in a production-ready state suitable for GitHub and
 deployment on Netlify.
 
 Before implementing:
+
 1. Inspect the environment and available tools.
 2. Fetch https://netlify.ai and use the current Netlify agent guidance/skills
    relevant to this project, rather than relying on assumptions about Netlify.
@@ -97,6 +98,7 @@ Schema should be migration-driven and stored in Git.
 At minimum model:
 
 posts
+
 - id
 - slug
 - title
@@ -108,11 +110,13 @@ posts
 - updated_at
 
 tags
+
 - id
 - slug
 - name
 
 post_tags
+
 - post_id
 - tag_id
 
@@ -182,6 +186,7 @@ Document important security decisions.
 Aim for a polished but intentionally minimal application.
 
 Public side:
+
 - pleasant reading layout
 - dark/light mode following system preference
 - responsive
@@ -191,6 +196,7 @@ Public side:
 - fast initial load
 
 Admin side:
+
 - post list
 - clear draft/published states
 - simple editor
@@ -296,26 +302,26 @@ with no conversation history to continue development safely.
 Create:
 
 AGENTS.md
-    Concise operational instructions for coding agents:
-    architecture, important paths, commands, conventions, testing requirements,
-    migration rules, security constraints, and definition of done.
+Concise operational instructions for coding agents:
+architecture, important paths, commands, conventions, testing requirements,
+migration rules, security constraints, and definition of done.
 
 docs/ARCHITECTURE.md
-    Overall system architecture, request/data flows, deployment architecture,
-    database design, and major boundaries.
+Overall system architecture, request/data flows, deployment architecture,
+database design, and major boundaries.
 
 docs/DECISIONS.md
-    Important architectural decisions and their rationale.
+Important architectural decisions and their rationale.
 
 docs/DEVELOPMENT.md
-    Detailed local development and testing workflow.
+Detailed local development and testing workflow.
 
 docs/DEPLOYMENT.md
-    GitHub + Netlify deployment and operational notes.
+GitHub + Netlify deployment and operational notes.
 
 docs/STATUS.md
-    What exists today, known limitations, technical debt, and sensible next
-    milestones.
+What exists today, known limitations, technical debt, and sensible next
+milestones.
 
 Keep documentation synchronized with the implementation.
 
@@ -376,4 +382,3 @@ Do not create a GitHub repository, push to a remote, create billable cloud
 resources, or publish to production unless I explicitly authorize those
 external actions. The local repository should nevertheless be completely
 ready for them.
-

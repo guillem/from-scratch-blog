@@ -31,6 +31,10 @@
 - `post_tags` foreign-key columns are not-null in practice (composite PK)
   but the generated `CREATE TABLE` omits explicit `NOT NULL`.
 - Playwright covers critical paths only; Identity UI is not e2e-tested.
+  End-to-end tests run against `astro dev` because `@astrojs/netlify` does
+  not support `astro preview`. They set `NETLIFY_DEV=true` so the Netlify Vite
+  plugin does not start a second local database. The production build is still
+  verified in CI.
 
 ## Next milestones
 

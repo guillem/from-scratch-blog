@@ -27,6 +27,7 @@ export default defineConfig({
     timeout: 180_000,
     env: {
       ...process.env,
+      NETLIFY_DEV: "true",
       E2E: "true",
       DEV_AUTH_BYPASS: "true",
       DEV_ADMIN_EMAIL: "admin@localhost",

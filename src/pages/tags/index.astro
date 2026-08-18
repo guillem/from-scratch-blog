@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { listTagsUsedByPublishedPosts } from "../../lib/tags";
+
+const tags = await listTagsUsedByPublishedPosts();
+---
+
+<BaseLayout title="Tags" canonicalPath="/tags">
+  <h1>Tags</h1>
+  {
+    tags.length === 0 ? (
+      <p class="empty">No tags on published posts yet.</p>
+    ) : (
+      <ul class="tags">
+        {tags.map((tag) => (
+          <li>
+            <a href={`/tags/${tag.slug}`}>
+              {tag.name} ({tag.postCount})
+            </a>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</BaseLayout>

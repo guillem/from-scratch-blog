@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostCard from "../../components/PostCard.astro";
+import { listPublishedPostsByTagSlug } from "../../lib/posts";
+
+const { slug } = Astro.params;
+if (!slug) {
+  return Astro.rewrite("/404");
+}
+
+const result = await listPublishedPostsByTagSlug(slug);
+if (!result) {
+  return Astro.rewrite("/404");
+}
+---
+
+<BaseLayout title={result.tag.name} canonicalPath={`/tags/${result.tag.slug}`}>
+  <h1>Tag: {result.tag.name}</h1>
+  {
+    result.posts.length === 0 ? (
+      <p class="empty">No published posts with this tag.</p>
+    ) : (
+      <ol class="post-list">
+        {result.posts.map((post) => (
+          <li>
+            <PostCard post={post} />
+          </li>
+        ))}
+      </ol>
+    )
+  }
+</BaseLayout>

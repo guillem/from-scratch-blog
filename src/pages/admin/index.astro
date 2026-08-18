@@ -1,0 +1,57 @@
+---
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import Flash from "../../components/Flash.astro";
+import { formatDate } from "../../lib/dates";
+import { listAllPosts } from "../../lib/posts";
+
+const posts = await listAllPosts();
+---
+
+<AdminLayout title="Posts">
+  <h1>Posts</h1>
+  <Flash />
+  {
+    posts.length === 0 ? (
+      <p class="empty">
+        No posts yet. <a href="/admin/posts/new">Write the first one</a>.
+      </p>
+    ) : (
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody>
+            {posts.map((post) => (
+              <tr>
+                <td>
+                  <a href={`/admin/posts/${post.id}`}>{post.title}</a>
+                  <div class="meta">{post.slug}</div>
+                </td>
+                <td>
+                  <span class:list={["badge", post.status]}>{post.status}</span>
+                  {post.status === "draft" ? (
+                    <>
+                      {" "}
+                      <a href={`/admin/preview/${post.slug}`}>Preview</a>
+                    </>
+                  ) : (
+                    <>
+                      {" "}
+                      <a href={`/posts/${post.slug}`}>View</a>
+                    </>
+                  )}
+                </td>
+                <td>{formatDate(post.updatedAt)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+</AdminLayout>

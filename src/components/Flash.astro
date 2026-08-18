@@ -1,0 +1,23 @@
+---
+interface Props {
+  error?: string | null;
+}
+
+const { error } = Astro.props;
+const success = Astro.url.searchParams.get("saved");
+---
+
+{
+  error ? (
+    <p class="flash error" role="alert">
+      {error}
+    </p>
+  ) : null
+}
+{
+  success ? (
+    <p class="flash" role="status">
+      Saved.
+    </p>
+  ) : null
+}

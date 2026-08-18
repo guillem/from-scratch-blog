@@ -1,0 +1,38 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { excerptFromMarkdown, renderMarkdown } from "../../../lib/markdown";
+import { formatDate, formatDateIso } from "../../../lib/dates";
+import { getPostBySlug } from "../../../lib/posts";
+
+const { slug } = Astro.params;
+if (!slug) {
+  return new Response(null, { status: 404 });
+}
+
+const post = await getPostBySlug(slug);
+if (!post) {
+  return new Response(null, { status: 404 });
+}
+
+const html = renderMarkdown(post.bodyMarkdown);
+const description = post.summary || excerptFromMarkdown(post.bodyMarkdown);
+---
+
+<AdminLayout title={`Preview: ${post.title}`}>
+  <p class="flash" role="status">
+    Draft preview — this page is not public.
+    <a href={`/admin/posts/${post.id}`}>Edit</a>
+  </p>
+  <article>
+    <header class="article-header">
+      <h1>{post.title}</h1>
+      <p class="meta">
+        <time datetime={formatDateIso(post.updatedAt)}
+          >{formatDate(post.updatedAt)}</time
+        >
+      </p>
+    </header>
+    {description ? <p class="lede">{description}</p> : null}
+    <div class="prose" set:html={html} />
+  </article>
+</AdminLayout>

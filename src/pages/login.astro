@@ -1,0 +1,231 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCurrentUser, isAdmin } from "../lib/auth";
+import { isDevAuthBypassEnabled } from "../lib/env";
+
+const user = await getCurrentUser();
+const next = Astro.url.searchParams.get("next") || "/admin";
+const error = Astro.url.searchParams.get("error");
+const bypass = isDevAuthBypassEnabled();
+---
+
+<BaseLayout title="Sign in" canonicalPath="/login">
+  <h1>Sign in</h1>
+  {
+    error === "forbidden" ? (
+      <p class="flash error" role="alert">
+        This account does not have the admin role.
+      </p>
+    ) : null
+  }
+  {
+    bypass ? (
+      <p class="flash" role="status">
+        Local development bypass is enabled. <a href="/admin">Open admin</a>
+      </p>
+    ) : null
+  }
+  {
+    user && isAdmin(user) ? (
+      <p>
+        Signed in as {user.email}. <a href="/admin">Continue to admin</a>{" "}
+        <button id="logout" class="secondary" type="button">
+          Sign out
+        </button>
+      </p>
+    ) : user ? (
+      <p class="flash error" role="alert">
+        Signed in as {user.email}, but this account is not an administrator.
+      </p>
+    ) : null
+  }
+  <form id="login-form" class="form">
+    <input type="hidden" name="next" value={next} />
+    <label>
+      Email
+      <input id="email" name="email" type="email" autocomplete="username" required />
+    </label>
+    <label>
+      Password
+      <input
+        id="password"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        required
+      />
+    </label>
+    <div class="form-actions">
+      <button type="submit">Sign in</button>
+      <button class="secondary" id="forgot" type="button">Forgot password</button>
+    </div>
+    <p id="login-error" class="flash error" hidden></p>
+    <p id="login-info" class="flash" hidden></p>
+  </form>
+  <div id="oauth" class="form-actions"></div>
+  <section id="invite" hidden>
+    <h2>Accept invitation</h2>
+    <form id="invite-form" class="form">
+      <label>
+        Choose a password
+        <input
+          id="invite-password"
+          name="password"
+          type="password"
+          minlength="8"
+          required
+        />
+      </label>
+      <button type="submit">Create account</button>
+    </form>
+  </section>
+  <section id="recovery" hidden>
+    <h2>Set a new password</h2>
+    <form id="recovery-form" class="form">
+      <label>
+        New password
+        <input
+          id="recovery-password"
+          name="password"
+          type="password"
+          minlength="8"
+          required
+        />
+      </label>
+      <button type="submit">Update password</button>
+    </form>
+  </section>
+</BaseLayout>
+
+<script>
+  import {
+    acceptInvite,
+    getSettings,
+    handleAuthCallback,
+    login,
+    logout,
+    oauthLogin,
+    requestPasswordRecovery,
+    updateUser,
+  } from "@netlify/identity";
+
+  const errorEl = document.querySelector<HTMLElement>("#login-error");
+  const infoEl = document.querySelector<HTMLElement>("#login-info");
+  const form = document.querySelector<HTMLFormElement>("#login-form");
+  const inviteSection = document.querySelector("#invite");
+  const recoverySection = document.querySelector("#recovery");
+  const oauth = document.querySelector("#oauth");
+  let inviteToken = "";
+
+  function showError(message: string) {
+    if (!errorEl) return;
+    errorEl.hidden = false;
+    errorEl.textContent = message;
+  }
+
+  function showInfo(message: string) {
+    if (!infoEl) return;
+    infoEl.hidden = false;
+    infoEl.textContent = message;
+  }
+
+  const nextInput = document.querySelector<HTMLInputElement>("input[name=next]");
+  const next = nextInput?.value || "/admin";
+
+  try {
+    const result = await handleAuthCallback();
+    if (result?.type === "invite" && result.token) {
+      inviteToken = result.token;
+      inviteSection?.removeAttribute("hidden");
+      form?.setAttribute("hidden", "true");
+    } else if (result?.type === "recovery") {
+      recoverySection?.removeAttribute("hidden");
+      form?.setAttribute("hidden", "true");
+    } else if (result?.user) {
+      window.location.replace(next);
+    }
+  } catch (error) {
+    showError(
+      error instanceof Error ? error.message : "Could not complete the auth callback.",
+    );
+  }
+
+  try {
+    const oauthProviders = ["google", "github", "gitlab", "bitbucket"] as const;
+    const settings = await getSettings();
+    for (const provider of oauthProviders) {
+      if (!settings.providers[provider]) continue;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "secondary";
+      button.textContent = `Continue with ${provider}`;
+      button.addEventListener("click", () => {
+        oauthLogin(provider);
+      });
+      oauth?.append(button);
+    }
+  } catch {
+    // Identity is unavailable locally unless the site is linked and enabled.
+  }
+
+  form?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const email = document.querySelector<HTMLInputElement>("#email")?.value ?? "";
+    const password = document.querySelector<HTMLInputElement>("#password")?.value ?? "";
+    try {
+      await login(email, password);
+      window.location.replace(next);
+    } catch (error) {
+      showError(error instanceof Error ? error.message : "Sign in failed.");
+    }
+  });
+
+  document.querySelector("#forgot")?.addEventListener("click", async () => {
+    const email = document.querySelector<HTMLInputElement>("#email")?.value ?? "";
+    if (!email) {
+      showError("Enter your email first.");
+      return;
+    }
+    try {
+      await requestPasswordRecovery(email);
+      showInfo("If that account exists, a recovery email is on the way.");
+    } catch (error) {
+      showError(error instanceof Error ? error.message : "Could not start recovery.");
+    }
+  });
+
+  document.querySelector("#invite-form")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const password =
+      document.querySelector<HTMLInputElement>("#invite-password")?.value ?? "";
+    try {
+      await acceptInvite(inviteToken, password);
+      window.location.replace(next);
+    } catch (error) {
+      showError(
+        error instanceof Error ? error.message : "Could not accept the invitation.",
+      );
+    }
+  });
+
+  document
+    .querySelector("#recovery-form")
+    ?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const password =
+        document.querySelector<HTMLInputElement>("#recovery-password")?.value ?? "";
+      try {
+        await updateUser({ password });
+        window.location.replace(next);
+      } catch (error) {
+        showError(
+          error instanceof Error ? error.message : "Could not update password.",
+        );
+      }
+    });
+
+  document.querySelector("#logout")?.addEventListener("click", async () => {
+    await logout();
+    window.location.replace("/");
+  });
+</script>

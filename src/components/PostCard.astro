@@ -1,0 +1,32 @@
+---
+import { formatDate } from "../lib/dates";
+import type { PostWithTags } from "../lib/posts";
+
+interface Props {
+  post: PostWithTags;
+}
+
+const { post } = Astro.props;
+const summary = post.summary || "";
+---
+
+<article>
+  <h2><a href={`/posts/${post.slug}`}>{post.title}</a></h2>
+  <p class="meta">
+    <time datetime={post.publishedAt?.toISOString()}>
+      {formatDate(post.publishedAt)}
+    </time>
+  </p>
+  {summary ? <p>{summary}</p> : null}
+  {
+    post.tags.length > 0 ? (
+      <ul class="tags">
+        {post.tags.map((tag) => (
+          <li>
+            <a href={`/tags/${tag.slug}`}>{tag.name}</a>
+          </li>
+        ))}
+      </ul>
+    ) : null
+  }
+</article>

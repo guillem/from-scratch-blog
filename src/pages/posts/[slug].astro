@@ -1,0 +1,50 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { excerptFromMarkdown, renderMarkdown } from "../../lib/markdown";
+import { formatDate, formatDateIso } from "../../lib/dates";
+import { getPublishedPostBySlug } from "../../lib/posts";
+
+const { slug } = Astro.params;
+if (!slug) {
+  return Astro.rewrite("/404");
+}
+
+const post = await getPublishedPostBySlug(slug);
+if (!post) {
+  return Astro.rewrite("/404");
+}
+
+const html = renderMarkdown(post.bodyMarkdown);
+const description = post.summary || excerptFromMarkdown(post.bodyMarkdown);
+---
+
+<BaseLayout
+  title={post.title}
+  description={description}
+  canonicalPath={`/posts/${post.slug}`}
+  type="article"
+  publishedTime={formatDateIso(post.publishedAt)}
+>
+  <article>
+    <header class="article-header">
+      <h1>{post.title}</h1>
+      <p class="meta">
+        <time datetime={formatDateIso(post.publishedAt)}
+          >{formatDate(post.publishedAt)}</time
+        >
+      </p>
+      {
+        post.tags.length > 0 ? (
+          <ul class="tags">
+            {post.tags.map((tag) => (
+              <li>
+                <a href={`/tags/${tag.slug}`}>{tag.name}</a>
+              </li>
+            ))}
+          </ul>
+        ) : null
+      }
+    </header>
+    <div class="prose" set:html={html} />
+  </article>
+</BaseLayout>

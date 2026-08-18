@@ -1,7 +1,7 @@
 export const SECURITY_HEADERS: Record<string, string> = {
   "Content-Security-Policy": [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline'",
+    "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "font-src 'self'",
@@ -16,6 +16,19 @@ export const SECURITY_HEADERS: Record<string, string> = {
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "Cross-Origin-Opener-Policy": "same-origin",
 };
+
+export function cachePolicyForPath(pathname: string): "public" | "private" {
+  if (
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    pathname === "/login" ||
+    pathname === "/api/admin" ||
+    pathname.startsWith("/api/admin/")
+  ) {
+    return "private";
+  }
+  return "public";
+}
 
 export function withSecurityHeaders(
   headers: Headers,

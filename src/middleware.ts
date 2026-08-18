@@ -1,6 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { getCurrentUser, isAdmin } from "./lib/auth";
-import { withSecurityHeaders } from "./lib/headers";
+import { cachePolicyForPath, withSecurityHeaders } from "./lib/headers";
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
@@ -21,7 +21,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const response = await next();
   withSecurityHeaders(response.headers, {
-    cache: isAdminPath || pathname === "/login" ? "private" : "public",
+    cache: cachePolicyForPath(pathname),
   });
   return response;
 });

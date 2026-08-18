@@ -23,3 +23,14 @@ const email = Astro.locals.user?.email;
   </nav>
   <slot />
 </BaseLayout>
+
+<script>
+  document.querySelectorAll<HTMLFormElement>("form[data-confirm]").forEach((form) => {
+    form.addEventListener("submit", (event) => {
+      const message = form.dataset.confirm;
+      if (message && !window.confirm(message)) {
+        event.preventDefault();
+      }
+    });
+  });
+</script>

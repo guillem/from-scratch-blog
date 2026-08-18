@@ -72,7 +72,7 @@ const tags = await listTags();
                 <td>
                   <form
                     method="post"
-                    onsubmit="return confirm('Delete this tag? Posts keep their other tags.')"
+                    data-confirm="Delete this tag? Posts keep their other tags."
                   >
                     <input type="hidden" name="intent" value="delete" />
                     <input type="hidden" name="id" value={tag.id} />

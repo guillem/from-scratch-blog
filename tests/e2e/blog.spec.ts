@@ -34,6 +34,35 @@ test("filters posts by tag and exposes feeds", async ({ page, request }) => {
   expect(await sitemap.text()).toContain("/posts/hello");
 });
 
+test("login next param only accepts same-origin relative paths", async ({ page }) => {
+  await page.goto("/login?next=https://evil.example");
+  await expect(page.locator('input[name="next"]')).toHaveValue("/admin");
+
+  await page.goto("/login?next=//evil.example");
+  await expect(page.locator('input[name="next"]')).toHaveValue("/admin");
+
+  await page.goto("/login?next=/admin/posts/new");
+  await expect(page.locator('input[name="next"]')).toHaveValue("/admin/posts/new");
+});
+
+test("security headers restrict scripts and keep admin APIs private", async ({
+  request,
+  baseURL,
+}) => {
+  const home = await request.get("/");
+  const scriptSrc = (home.headers()["content-security-policy"] ?? "")
+    .split(";")
+    .map((directive) => directive.trim())
+    .find((directive) => directive.startsWith("script-src"));
+  expect(scriptSrc).toBe("script-src 'self'");
+
+  const preview = await request.post("/api/admin/preview", {
+    headers: { Origin: new URL(baseURL ?? "http://127.0.0.1:4321").origin },
+    data: { markdown: "hello" },
+  });
+  expect(preview.headers()["cache-control"]).toMatch(/private/);
+});
+
 test("authenticated admin can create a post", async ({ page }) => {
   await page.goto("/admin/posts/new");
   await page.getByLabel("Title").fill("E2E created post");

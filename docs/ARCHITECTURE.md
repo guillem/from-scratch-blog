@@ -14,22 +14,25 @@ Browser
        └─ Drizzle writes
 ```
 
-Netlify serves the Astro adapter as Functions. Hosted deploys apply SQL from
-`netlify/database/migrations/` before publish. Each Deploy Preview gets an
-isolated database branch copied from production at preview creation.
+Netlify serves the Astro adapter as Functions. On a credit-based plan, hosted
+deploys apply SQL from `netlify/database/migrations/` before publish and each
+Deploy Preview gets an isolated database branch. On a bring-your-own database,
+the operator applies that SQL; previews share `NETLIFY_DB_URL`.
 
 ## Runtime choices
 
-| Piece        | Choice                                 |
-| ------------ | -------------------------------------- |
-| UI/framework | Astro 7, `output: "server"`            |
-| Host adapter | `@astrojs/netlify`                     |
-| Database     | Netlify Database (Postgres)            |
-| Data access  | Drizzle ORM (`drizzle-orm/netlify-db`) |
-| Auth         | `@netlify/identity`                    |
-| Markdown     | `marked` + `sanitize-html`             |
+| Piece        | Choice                                      |
+| ------------ | ------------------------------------------- |
+| UI/framework | Astro 7, `output: "server"`                 |
+| Host adapter | `@astrojs/netlify`                          |
+| Database     | Netlify Database, or BYO Postgres           |
+| Data access  | Drizzle (`netlify-db` / `neon-http` / `pg`) |
+| Auth         | `@netlify/identity`                         |
+| Markdown     | `marked` + `sanitize-html`                  |
 
-There is no separate API server, container, or third-party database.
+There is no separate API server or container. Credit-based plans use Netlify
+Database. Legacy plans can point `NETLIFY_DB_URL` at an external Postgres
+(for example Neon).
 
 ## Request flows
 
@@ -42,9 +45,10 @@ call `listPublishedPosts`, `getPublishedPostBySlug`, or
 `createPostAsAdmin` / `updatePostAsAdmin` / `deletePostAsAdmin`, and redirects.
 CDN `Role=admin` redirects in `netlify.toml` are a coarse extra gate only.
 
-**Login.** Browser calls `login()`, `handleAuthCallback()`, `acceptInvite()`,
-and `oauthLogin()` from `@netlify/identity`. The server reads `nf_jwt` via
-`getUser()` on later requests.
+**Login.** Identity emails land on `/` with a hash token. `BaseLayout`
+forwards those hashes to `/login`, which calls `handleAuthCallback()`,
+`acceptInvite()`, `login()`, and `oauthLogin()` from `@netlify/identity`.
+The server reads `nf_jwt` via `getUser()` on later requests.
 
 ## Data model
 

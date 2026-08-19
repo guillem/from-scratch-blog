@@ -24,7 +24,15 @@ that line deprecated in favor of `@rc`, and `@rc` still exports
 
 Local tests use `drizzle-orm/node-postgres` when `NETLIFY_DB_URL` is a
 plain Postgres URL from `@netlify/database-dev`. Hosted Neon-shaped URLs
-and the zero-config Netlify runtime still use `drizzle-orm/netlify-db`.
+use `drizzle-orm/neon-http` because `drizzle-orm/netlify-db` still calls
+`sql("SELECT $1", params)`, which `@neondatabase/serverless` 1.x rejects
+(every public page 500s; `/login` still works). Zero-config Netlify Database
+(`drizzle()` with no URL) remains the credit-based default.
+
+`@netlify/database` stays a dependency so credit-based deploys provision a
+database. On a legacy plan that package makes the build call
+`createSiteDatabase` and fail with 403; operators remove it and set
+`NETLIFY_DB_URL` themselves (see `docs/DEPLOYMENT.md`).
 
 ## `@netlify/identity` instead of the Identity widget
 
@@ -32,6 +40,11 @@ Current Netlify docs recommend `@netlify/identity` for new work. Login,
 invite acceptance, recovery, and OAuth run in the browser; `getUser()` runs
 on the server. Registration stays invite-only in the dashboard. The `admin`
 role is assigned in the dashboard, never granted automatically on signup.
+
+GoTrue emails open the **site URL** with a hash (`#invite_token=`,
+`#recovery_token=`, and similar). Only `/login` runs `handleAuthCallback()`,
+so `BaseLayout` forwards matching hashes there. Classic Identity works on
+legacy Netlify plans; Netlify Database does not.
 
 ## Defense in depth for `/admin`
 

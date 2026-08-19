@@ -24,11 +24,14 @@
 - `script-src` is `'self'` only. Delete confirmations use bundled listeners
   rather than `onsubmit` attributes. `style-src` still allows `'unsafe-inline'`
   for a few presentational inline styles.
-- Database and Identity require a Netlify credit-based plan.
+- Netlify Database requires a credit-based plan. Legacy plans must bring their
+  own Postgres (see `docs/DEPLOYMENT.md`). Classic Identity does not.
 
 ## Technical debt
 
 - Drizzle is on the `1.0.0-rc` line until `netlify-db` ships in `@latest`.
+  Neon-shaped `NETLIFY_DB_URL` values use `drizzle-orm/neon-http` because
+  `netlify-db` is incompatible with `@neondatabase/serverless` 1.x.
 - `post_tags` foreign-key columns are not-null in practice (composite PK)
   but the generated `CREATE TABLE` omits explicit `NOT NULL`.
 - Playwright covers critical paths only; Identity UI is not e2e-tested.

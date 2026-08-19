@@ -73,4 +73,5 @@ fix the schema, and generate again. Do not edit applied SQL.
 
 Local login against real Netlify Identity is not supported. Use the bypass
 for UI work. Exercise invite, OAuth, and role assignment on a Deploy Preview
-after Identity is enabled on the Netlify project.
+after Identity is enabled on the Netlify project. Invite and recovery emails
+open the site URL with a hash; the layout forwards those hashes to `/login`.

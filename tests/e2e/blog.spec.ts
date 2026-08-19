@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { siteConfig } from "../../src/config/site";
 
 test("lists published posts and hides drafts", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "From Scratch" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: siteConfig.title })).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Hello from a reusable blog" }),
   ).toBeVisible();
@@ -32,6 +33,11 @@ test("filters posts by tag and exposes feeds", async ({ page, request }) => {
   const sitemap = await request.get("/sitemap.xml");
   expect(sitemap.ok()).toBeTruthy();
   expect(await sitemap.text()).toContain("/posts/hello");
+});
+
+test("identity hashes on the homepage redirect to login", async ({ page }) => {
+  await page.goto("/#invite_token=e2e-invite");
+  await expect(page).toHaveURL(/\/login/);
 });
 
 test("login next param only accepts same-origin relative paths", async ({ page }) => {

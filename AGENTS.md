@@ -51,6 +51,9 @@ Hosted production and Deploy Preview databases are migrated by the deploy.
 
 Install **current** `drizzle-orm` / `drizzle-kit` from the dist-tag that still
 exports `drizzle-orm/netlify-db` (today that is `@rc`; `@latest` does not).
+Hosted Neon-shaped URLs must use `drizzle-orm/neon-http`, not `netlify-db`.
+Do not remove `@netlify/database` unless the operator is on a legacy plan
+that cannot provision Netlify Database (see `docs/DEPLOYMENT.md`).
 
 ## Security constraints
 

@@ -23,7 +23,7 @@ Netlify Identity and Netlify Database (managed PostgreSQL).
 
 - Node.js 22.12 or newer
 - npm
-- A Netlify account on a [credit-based plan](https://docs.netlify.com/build/data-and-storage/netlify-database/) (required for Netlify Database and Identity)
+- A Netlify account. The default database path is [Netlify Database](https://docs.netlify.com/build/data-and-storage/netlify-database/), which needs a credit-based plan. [Legacy plans](docs/DEPLOYMENT.md#legacy-non-credit-plans) can bring their own Postgres. Identity does not require a credit-based plan.
 
 ## Quick start (local)
 
@@ -71,8 +71,10 @@ but `netlify dev` is the supported way to get a local database.
 1. Edit `src/config/site.ts` (title, description, author, locale).
 2. Replace `public/favicon.svg` if you want.
 3. Leave `.env` and `.netlify/` uncommitted.
-4. Create your own Netlify project, database, and Identity instance.
-5. Invite the first user and assign the `admin` role in the Netlify UI.
+4. Create your own Netlify project and Identity instance. Use Netlify Database
+   on a credit-based plan, or [bring your own Postgres](docs/DEPLOYMENT.md#legacy-non-credit-plans).
+5. Invite the first user and assign the `admin` role in the Netlify UI. Identity
+   invite emails land on `/` with a hash; the site forwards them to `/login`.
 
 Content never belongs in Git. Migrations recreate the empty schema; posts live
 in that deployment’s database.

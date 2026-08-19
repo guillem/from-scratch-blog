@@ -86,5 +86,17 @@ const ogImage = absoluteUrl("/favicon.svg");
     <footer class="site-footer">
       <p>{siteConfig.description}</p>
     </footer>
+    <script>
+      import { loginPathForAuthHash } from "../lib/identity-callback";
+
+      const target = loginPathForAuthHash(
+        window.location.pathname,
+        window.location.search,
+        window.location.hash,
+      );
+      if (target) {
+        window.location.replace(target);
+      }
+    </script>
   </body>
 </html>

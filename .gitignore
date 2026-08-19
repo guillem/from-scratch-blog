@@ -19,6 +19,7 @@ coverage/
 playwright-report/
 test-results/
 .test-db/
+.test-db-ssr/
 .test-db-url
 blob-report/
 

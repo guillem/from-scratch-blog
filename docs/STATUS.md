@@ -9,7 +9,8 @@
 - Invite-oriented `/admin` for posts and tags, including draft preview
 - Server-side admin authorization and CSRF origin checks
 - Local/CI admin bypass that is disabled on hosted Netlify contexts
-- Unit, database, and Playwright tests
+- Unit, database, Playwright, and post-build SSR smoke tests
+- V8 coverage report from `npm test` (`coverage/`)
 - GitHub Actions (`npm run ci`)
 - MIT license and operator/agent documentation
 
@@ -34,11 +35,15 @@
   `netlify-db` is incompatible with `@neondatabase/serverless` 1.x.
 - `post_tags` foreign-key columns are not-null in practice (composite PK)
   but the generated `CREATE TABLE` omits explicit `NOT NULL`.
+- `sanitize-html` is CJS; `htmlparser2` is pinned to 8.x via npm `overrides`
+  so Node 22 Netlify functions can load Markdown pages.
 - Playwright covers critical paths only; Identity UI is not e2e-tested.
   End-to-end tests run against `astro dev` because `@astrojs/netlify` does
   not support `astro preview`. They set `NETLIFY_DEV=true` so the Netlify Vite
-  plugin does not start a second local database. The production build is still
-  verified in CI.
+  plugin does not start a second local database. After `astro build`,
+  `npm run test:ssr` imports the generated SSR function with Node and
+  requests permalinks and feeds so CJS/ESM load failures are not hidden
+  by Vite.
 
 ## Next milestones
 

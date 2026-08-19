@@ -33,6 +33,17 @@ test("filters posts by tag and exposes feeds", async ({ page, request }) => {
   const sitemap = await request.get("/sitemap.xml");
   expect(sitemap.ok()).toBeTruthy();
   expect(await sitemap.text()).toContain("/posts/hello");
+
+  const atom = await request.get("/atom.xml");
+  expect(atom.ok()).toBeTruthy();
+  expect(atom.headers()["content-type"]).toMatch(/atom/i);
+  expect(await atom.text()).toContain("Hello from a reusable blog");
+  expect(await atom.text()).not.toContain("secret-draft");
+
+  const robots = await request.get("/robots.txt");
+  expect(robots.ok()).toBeTruthy();
+  expect(await robots.text()).toContain("Disallow: /admin");
+  expect(await robots.text()).toContain("Sitemap:");
 });
 
 test("identity hashes on the homepage redirect to login", async ({ page }) => {
@@ -62,11 +73,21 @@ test("security headers restrict scripts and keep admin APIs private", async ({
     .find((directive) => directive.startsWith("script-src"));
   expect(scriptSrc).toBe("script-src 'self'");
 
+  const origin = new URL(baseURL ?? "http://127.0.0.1:4321").origin;
   const preview = await request.post("/api/admin/preview", {
-    headers: { Origin: new URL(baseURL ?? "http://127.0.0.1:4321").origin },
+    headers: { Origin: origin },
+    data: { markdown: "**hello**" },
+  });
+  expect(preview.ok()).toBeTruthy();
+  expect(preview.headers()["cache-control"]).toMatch(/private/);
+  const previewBody = (await preview.json()) as { html: string };
+  expect(previewBody.html).toContain("<strong>hello</strong>");
+
+  const csrf = await request.post("/api/admin/preview", {
+    headers: { Origin: "https://evil.example" },
     data: { markdown: "hello" },
   });
-  expect(preview.headers()["cache-control"]).toMatch(/private/);
+  expect(csrf.status()).toBe(403);
 });
 
 test("draft-only tags are not listed publicly", async ({ page }) => {
@@ -94,4 +115,58 @@ test("authenticated admin can create a post", async ({ page }) => {
 
   await page.goto("/posts/e2e-created-post");
   await expect(page.getByRole("heading", { name: "E2E created post" })).toBeVisible();
+});
+
+test("admin can preview a draft, publish an edit, and delete the post", async ({
+  page,
+}) => {
+  await page.goto("/admin/posts/new");
+  await page.getByLabel("Title").fill("Lifecycle draft");
+  await page.getByLabel("Slug").fill("lifecycle-draft");
+  await page.getByLabel("Body (Markdown)").fill("Only visible as a draft preview.");
+  await page.getByLabel("Status").selectOption("draft");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByRole("heading", { name: "Edit post" })).toBeVisible();
+
+  await page.getByRole("link", { name: "Preview draft" }).click();
+  await expect(page.getByRole("status")).toContainText("Draft preview");
+  await expect(page.getByRole("heading", { name: "Lifecycle draft" })).toBeVisible();
+  const publicDraft = await page.goto("/posts/lifecycle-draft");
+  expect(publicDraft?.status()).toBe(404);
+
+  await page.goto("/admin");
+  await page.getByRole("link", { name: "Lifecycle draft" }).click();
+  await page.getByLabel("Title").fill("Lifecycle published");
+  await page.getByLabel("Status").selectOption("published");
+  await page.getByRole("button", { name: "Save" }).click();
+  await expect(page.getByRole("heading", { name: "Edit post" })).toBeVisible();
+
+  await page.goto("/posts/lifecycle-draft");
+  await expect(
+    page.getByRole("heading", { name: "Lifecycle published" }),
+  ).toBeVisible();
+
+  await page.goto("/admin");
+  await page.getByRole("link", { name: "Lifecycle published" }).click();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete post" }).click();
+  await expect(page.getByRole("heading", { name: "Posts" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Lifecycle published" })).toHaveCount(0);
+
+  const deleted = await page.goto("/posts/lifecycle-draft");
+  expect(deleted?.status()).toBe(404);
+});
+
+test("admin can create and delete a tag", async ({ page }) => {
+  await page.goto("/admin/tags");
+  await page.getByLabel("Name").fill("E2E Topic");
+  await page.getByRole("button", { name: "Add tag" }).click();
+  await expect(page.getByRole("cell", { name: "E2E Topic" })).toBeVisible();
+
+  page.once("dialog", (dialog) => dialog.accept());
+  await page
+    .getByRole("row", { name: /E2E Topic/ })
+    .getByRole("button", { name: "Delete" })
+    .click();
+  await expect(page.getByRole("cell", { name: "E2E Topic" })).toHaveCount(0);
 });

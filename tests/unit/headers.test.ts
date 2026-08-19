@@ -52,6 +52,14 @@ describe("withSecurityHeaders", () => {
       const hosted = new Headers();
       withSecurityHeaders(hosted);
       expect(hosted.get("Strict-Transport-Security")).toBe("max-age=31536000");
+
+      const privateHeaders = new Headers();
+      withSecurityHeaders(privateHeaders, { cache: "private" });
+      expect(privateHeaders.get("Cache-Control")).toBe("private, no-store");
+
+      const publicHeaders = new Headers();
+      withSecurityHeaders(publicHeaders, { cache: "public" });
+      expect(publicHeaders.get("Cache-Control")).toMatch(/s-maxage=60/);
     } finally {
       if (previous === undefined) {
         delete process.env.CONTEXT;

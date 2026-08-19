@@ -51,9 +51,17 @@ npm run format
 npm run lint
 npm run typecheck
 npm test
+npm run build
+npm run test:ssr
 npm run test:e2e
 npm run ci
 ```
+
+`npm test` runs unit and database tests with a V8 coverage report (`coverage/`).
+`npm run test:ssr` loads the built Netlify SSR function with Node (not Vite)
+and hits permalinks plus feeds — that is what catches CJS/ESM runtime failures
+`astro dev` hides. Playwright still uses `astro dev`; run `test:ssr` after
+`npm run build`.
 
 Playwright needs a Chromium install once: `npx playwright install chromium`.
 

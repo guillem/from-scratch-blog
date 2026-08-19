@@ -2,17 +2,26 @@ import { describe, expect, it } from "vitest";
 import "./setup";
 import {
   createPostAsAdmin,
+  createTagAsAdmin,
   deletePostAsAdmin,
+  deleteTagAsAdmin,
   updatePostAsAdmin,
 } from "../../src/lib/admin";
 import {
+  getPostById,
   getPostBySlug,
   getPublishedPostBySlug,
   listPublishedPosts,
   listPublishedPostsByTagSlug,
 } from "../../src/lib/posts";
 import type { AppUser } from "../../src/lib/auth";
-import { createTag, deleteTag, listTags } from "../../src/lib/tags";
+import { seedDemoContent } from "../../src/lib/seed";
+import {
+  createTag,
+  deleteTag,
+  listTags,
+  listTagsUsedByPublishedPosts,
+} from "../../src/lib/tags";
 
 const admin: AppUser = { id: "admin", email: "admin@example.com", roles: ["admin"] };
 const stranger: AppUser = { id: "user", email: "user@example.com", roles: [] };
@@ -51,6 +60,7 @@ describe("posts and tags", () => {
     const fetched = await getPublishedPostBySlug("public-post");
     expect(listed.map((post) => post.slug)).toContain("public-post");
     expect(fetched?.id).toBe(created.id);
+    expect((await getPostById(created.id))?.slug).toBe("public-post");
     expect(fetched?.tags.map((tag) => tag.slug)).toContain("writing");
   });
 
@@ -109,6 +119,9 @@ describe("posts and tags", () => {
     });
     expect(await listPublishedPostsByTagSlug("secret-topic")).toBeUndefined();
     expect((await listTags()).map((tag) => tag.slug)).toContain("secret-topic");
+    expect((await listTagsUsedByPublishedPosts()).map((tag) => tag.slug)).not.toContain(
+      "secret-topic",
+    );
   });
 
   it("creates tags with unique slugs", async () => {
@@ -116,5 +129,24 @@ describe("posts and tags", () => {
     await expect(createTag({ name: "Meta", slug: "meta" })).rejects.toThrow(
       /already exists/,
     );
+  });
+
+  it("seeds published and draft fixtures", async () => {
+    await seedDemoContent();
+    expect(await getPublishedPostBySlug("hello")).toMatchObject({
+      status: "published",
+    });
+    expect(await getPublishedPostBySlug("secret-draft")).toBeUndefined();
+    expect(await getPostBySlug("secret-draft")).toMatchObject({ status: "draft" });
+  });
+
+  it("creates and deletes tags through admin helpers", async () => {
+    const created = await createTagAsAdmin(admin, { name: "Ops", slug: "ops" });
+    expect(created.slug).toBe("ops");
+    await expect(
+      createTagAsAdmin(stranger, { name: "Nope", slug: "nope" }),
+    ).rejects.toThrow(/Administrator access required/);
+    await deleteTagAsAdmin(admin, created.id);
+    expect((await listTags()).map((tag) => tag.slug)).not.toContain("ops");
   });
 });

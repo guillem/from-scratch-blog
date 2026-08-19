@@ -9,5 +9,6 @@ describe("escapeXml", () => {
     expect(escapeXml(`https://example.com/"x"`)).toBe(
       "https://example.com/&quot;x&quot;",
     );
+    expect(escapeXml(`<tag attr='1'>`)).toBe("&lt;tag attr=&apos;1&apos;&gt;");
   });
 });

@@ -64,6 +64,12 @@ ignored when `CONTEXT` is `production`, `deploy-preview`, or `branch-deploy`.
 tight tag set. Raw HTML, `javascript:` URLs, and event handlers are stripped.
 Admin preview reuses the same server function.
 
+`sanitize-html` is CommonJS and depends on `htmlparser2` 12, which is
+ESM-only. Node 22 (Netlify functions and this repo’s `.nvmrc`) cannot
+`require()` an ES module, so every route that imported `src/lib/markdown.ts`
+returned 500. `package.json` overrides `htmlparser2` to 8.x, the last CJS
+release, until `sanitize-html` ships an ESM build.
+
 ## No comments in v1
 
 Comments need spam controls, moderation, and a privacy story. They are out of

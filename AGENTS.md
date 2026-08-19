@@ -24,6 +24,7 @@ SQL files under `netlify/database/migrations/`.
 | `tests/unit/`                  | Pure tests, no database                       |
 | `tests/db/`                    | Database tests via `@netlify/database-dev`    |
 | `tests/e2e/`                   | Playwright against an ephemeral DB            |
+| `tests/ssr/`                   | Post-build Netlify function smoke             |
 
 ## Commands
 

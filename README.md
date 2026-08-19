@@ -61,10 +61,11 @@ but `netlify dev` is the supported way to get a local database.
 | `npm run db:generate` | Create a migration from `db/schema.ts`                                                |
 | `npm run db:migrate`  | Apply pending migrations to `NETLIFY_DB_URL` (warns if the host is not local)         |
 | `npm run db:seed`     | Insert optional local fixtures (refuses hosted deploys unless `ALLOW_PROD_SEED=true`) |
-| `npm test`            | Unit and database tests                                                               |
+| `npm test`            | Unit and database tests with a coverage report (`coverage/`)                          |
+| `npm run test:ssr`    | Hit the built Netlify SSR function (run after `npm run build`)                        |
 | `npm run test:e2e`    | Playwright flows against an ephemeral database                                        |
 | `npm run build`       | Production build                                                                      |
-| `npm run ci`          | Format, lint, types, tests, build, and e2e                                            |
+| `npm run ci`          | Format, lint, types, tests, build, SSR smoke, and e2e                                 |
 
 ## Customize a fork
 

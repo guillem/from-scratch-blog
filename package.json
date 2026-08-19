@@ -17,13 +17,14 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "typecheck": "astro check && tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --coverage",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:ssr": "vitest run --config vitest.ssr.config.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/warn-remote-db.ts && npx netlify database migrations apply",
     "db:seed": "tsx scripts/seed.ts",
-    "ci": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run test:e2e"
+    "ci": "npm run format:check && npm run lint && npm run typecheck && npm test && npm run build && npm run test:ssr && npm run test:e2e"
   },
   "dependencies": {
     "@astrojs/netlify": "^8.2.2",
@@ -39,6 +40,9 @@
     "sanitize-html": "^2.17.7",
     "zod": "^4.4.3"
   },
+  "overrides": {
+    "htmlparser2": "8.0.2"
+  },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
     "@netlify/database-dev": "^1.0.0",
@@ -46,6 +50,7 @@
     "@types/node": "^22.19.13",
     "@types/pg": "^8.23.1",
     "@types/sanitize-html": "^2.16.1",
+    "@vitest/coverage-v8": "^4.1.10",
     "drizzle-kit": "^1.0.0-rc.4",
     "eslint": "^10.8.1",
     "eslint-config-prettier": "^10.1.8",
